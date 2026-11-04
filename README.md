@@ -43,11 +43,12 @@ Honesty rules, stated on the page itself:
 
 ## Wallet: MetaMask + Sepolia ETH (per action, not a separate send)
 
-- **Connect:** the “Connect wallet” button is at the very top of the
-  page, because it is the first thing a player needs. It uses the
-  injected provider (MetaMask) via `eth_requestAccounts`. No private
-  key or seed phrase is ever handled by this site. Picking an action
-  also connects automatically if you are not connected yet.
+- **Connect:** the “Connect wallet” button sits in the hero at the
+  top of the page, next to the title — there is no separate wallet
+  banner below it. It uses the injected provider (MetaMask) via
+  `eth_requestAccounts`. No private key or seed phrase is ever
+  handled by this site. Picking an action also connects
+  automatically if you are not connected yet.
 - **Every Pick action is a Sepolia transaction (testnet only):**
   clicking Rest, Scout or Sprint opens MetaMask for a real Sepolia
   transaction — **0 ETH to yourself**, gas in Sepolia test ETH, with

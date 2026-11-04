@@ -64,6 +64,8 @@ h3 { color: var(--gold-soft); }
   transform: rotate(2deg);
 }
 .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.walletRow { margin-top: 18px; }
+#walletInfo { word-break: break-all; }
 .badges span {
   padding: 5px 11px;
   border: 1px solid var(--line);
@@ -81,10 +83,6 @@ h3 { color: var(--gold-soft); }
   padding: 22px;
   margin: 18px 0;
   box-shadow: 0 14px 34px rgba(0, 0, 0, .35);
-}
-section[aria-label="Wallet"] {
-  border-color: rgba(242, 183, 5, .55);
-  background: linear-gradient(180deg, #2d2150, #1d1436);
 }
 .muted { color: var(--muted); }
 a { color: var(--gold-soft); }
