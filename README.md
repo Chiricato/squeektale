@@ -87,7 +87,7 @@ Honesty rules, stated on the page itself:
 ## Run the tests
 
 ```bash
-npm test   # 11 tests, no dependencies
+npm test   # 14 tests, no dependencies
 ```
 
 ## What this is not

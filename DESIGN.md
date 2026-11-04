@@ -49,9 +49,20 @@ comes straight from the settlement batch's `workAdded`.
 
 ## Wallet, MetaMask and Sepolia ETH payment — safety notes
 
-- Payment and claim share one guard, `ensureSepolia()`: switch to
-  Sepolia, read `eth_chainId`, abort unless it is exactly `0xaa36a7`,
-  and pin that chain ID on the transaction.
+- Payment and claim share one guard, `ensureSepolia()`, in this
+  order: SWITCH to Sepolia first (the no-op when Sepolia is already
+  there, and it never overwrites the user's own RPC); only on error
+  4902 ADD Sepolia with the standard params; then read `eth_chainId`
+  and abort unless it is exactly `0xaa36a7`, and pin that chain ID
+  on the transaction. User rejection (4001) and an already-pending
+  wallet request (-32002) are reported in plain words.
+- Screen-change bugs probed and fixed: a chosen action stranded by a
+  live-API failure now resolves at once in recorded mode; the wait
+  text is reset on every mode change; account/chain changes in the
+  wallet update the page instead of leaving a stale address; an API
+  answer with no settled rounds shows a retry notice instead of
+  hanging on “loading”; every element id used by `site.js` was
+  checked against `index.html` (none missing).
 - Payment amounts are converted with BigInt in `lib/story.js`
   (`ethToWeiHex`), never with floats, and are validated before any
   wallet call: recipient must match `0x` + 40 hex characters, amount

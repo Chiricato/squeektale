@@ -4,6 +4,7 @@ import {
   DEMO_WORKS, RECORDED_WORKS, isEthAddress, ethToWeiHex,
   SEPOLIA_CHAIN_ID,
 } from './lib/story.js';
+import { SEPOLIA_PARAMS, sepChainAction, sepErrorMessage } from './lib/wallet.js';
 
 // Squeekchain public API. No key, no account: these are the same public
 // endpoints Squeek Garden and the other Genesis projects read from.
@@ -96,6 +97,9 @@ async function pollLive() {
     if (!evRes.ok) throw new Error('events API failed');
     const settlements = parseSettlements(await evRes.json());
     const latest = settlements[settlements.length - 1];
+    if (!latest) {
+      $('liveInfo').textContent = 'API answered, but returned no settled rounds yet. Retrying in 30 seconds.';
+    }
     if (latest) {
       if (lastSeenRound === null) lastSeenRound = latest.settledThroughRound;
       else if (latest.settledThroughRound > lastSeenRound) {
@@ -128,6 +132,12 @@ function setMode(next) {
   mode = next;
   clearInterval(demoTimer);
   if (mode === 'demo') startDemoTimer();
+  else if (mode === 'live') $('wait').textContent = 'Live mode polls every 30 seconds. Pick an action, then wait for the next settlement to close.';
+  else $('wait').textContent = 'Recorded mode: pick an action and the next recorded round resolves it at once.';
+  // Screen-change bug fixed here: if the live API just failed while an
+  // action was already chosen, do not leave that action stranded in
+  // recorded mode waiting for another click.
+  if (mode === 'recorded' && chosen && !tale.finished) recordedTick();
   render();
 }
 
@@ -145,15 +155,64 @@ $('liveBtn').addEventListener('click', () => { setMode('live'); pollLive(); });
 $('newBtn').addEventListener('click', () => {
   tale = createTale(); chosen = null; demoIndex = 0; recordedIndex = 0; save(); render(); startDemoTimer();
 });
+// Sepolia, done in the order wallets expect:
+// 1. Try to SWITCH first — this is the no-op path when Sepolia is
+//    already in the wallet, and it never overwrites the user's RPC.
+// 2. Only if the wallet says 4902 (chain not added) do we ADD it,
+//    with the standard Sepolia params. This is the auto-add the user
+//    asked for: a wallet without Sepolia gets it added, on demand.
+// 3. Verify eth_chainId afterwards, whatever path was taken. If the
+//    wallet is still not on Sepolia, nothing is sent.
+// User rejection (4001) and an already-pending request (-32002) are
+// reported in plain words instead of a raw error code.
 async function ensureSepolia() {
-  await window.ethereum.request({
-    method: 'wallet_addEthereumChain',
-    params: [{ chainId: SEPOLIA_CHAIN_ID, chainName: 'Sepolia',
-      nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
-      rpcUrls: ['https://rpc.sepolia.org'], blockExplorerUrls: ['https://sepolia.etherscan.io'] }],
-  });
+  if (!window.ethereum) throw new Error('No injected wallet found (e.g. MetaMask).');
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: SEPOLIA_CHAIN_ID }],
+    });
+  } catch (switchError) {
+    if (sepChainAction(switchError) === 'add-chain') {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [SEPOLIA_PARAMS],
+        });
+      } catch (addError) {
+        // Some wallets report "already added" here after a race; a
+        // second switch attempt settles it, otherwise surface the error.
+        if (sepChainAction(addError) === 'add-chain') {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: SEPOLIA_CHAIN_ID }],
+          });
+        } else {
+          throw new Error(sepErrorMessage(addError, 'Adding Sepolia'));
+        }
+      }
+    } else {
+      throw new Error(sepErrorMessage(switchError, 'Switching to Sepolia'));
+    }
+  }
   const chainId = await window.ethereum.request({ method: 'eth_chainId' });
   if (chainId !== SEPOLIA_CHAIN_ID) throw new Error('Wallet is not on Sepolia after switching; transaction aborted.');
+}
+
+// Wallet state can change behind the page's back: account switches,
+// chain switches, disconnects. Keep the page's copy in sync instead
+// of sending from a stale address.
+if (window.ethereum?.on) {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    wallet = accounts?.[0] || null;
+    if (wallet && !$('payTo').value) $('payTo').value = wallet;
+    $('walletInfo').textContent = wallet
+      ? `Connected: ${wallet} (account changed in wallet)`
+      : 'Wallet disconnected in MetaMask. Connect again before paying or claiming.';
+  });
+  window.ethereum.on('chainChanged', () => {
+    $('walletInfo').textContent = 'Chain changed in wallet. The next payment or claim will switch back to Sepolia and verify it first.';
+  });
 }
 
 $('walletBtn').addEventListener('click', async () => {
@@ -163,7 +222,7 @@ $('walletBtn').addEventListener('click', async () => {
     wallet = accounts[0];
     if (!$('payTo').value) $('payTo').value = wallet;
     $('walletInfo').textContent = `Connected: ${wallet} (Sepolia check runs before any payment or claim, nothing signed yet)`;
-  } catch (e) { $('walletInfo').textContent = `Wallet connection failed: ${e.message || e}`; }
+  } catch (e) { $('walletInfo').textContent = sepErrorMessage(e, 'Wallet connection'); }
 });
 
 // Sepolia ETH payment (testnet only). The user types the recipient and
