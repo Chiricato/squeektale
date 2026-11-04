@@ -1,0 +1,1 @@
+{"description":"A living story that moves with Squeektoshi's real SqueekCore rounds on Squeekchain.","license":"MIT","name":"squeektale","scripts":{"start":"python3 -m http.server 8765","test":"node --test test/story.test.js"},"type":"module","version":"1.0.0"}

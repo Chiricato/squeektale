@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SqueekTale — A living story on Squeekchain</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>🐹 SqueekTale</h1>
+    <p class="tag">A living story that moves with Squeektoshi's real SqueekCore rounds. No betting, no real money — just choices, chapters and endings.</p>
+    <p class="tag">Pip the courier must reach the Dawn Lighthouse in 10 chapters. Each chapter is written by one real settled round: a nap, a jog, or zoomies.</p>
+  </header>
+
+  <section class="panel" aria-label="Live Squeekchain data">
+    <h2>Live from Squeekchain</h2>
+    <p id="wheel">Wheel now: loading…</p>
+    <p id="liveInfo">Latest settled round: loading…</p>
+    <p><span id="apiState">API: live</span> · <span id="modeLabel">Live SqueekCore</span></p>
+    <p id="wait" class="muted">Live mode polls every 30 seconds. Pick an action, then wait for the next settlement to close.</p>
+    <div class="row">
+      <button id="liveBtn">Live mode</button>
+      <button id="demoBtn">Demo mode (8s rounds)</button>
+      <button id="newBtn">Start a new tale</button>
+    </div>
+    <p class="muted">Demo and recorded rounds are always labelled as such. They are never presented as live SqueekCore data. A settlement batch that closes several rounds is treated as one chapter using its total work — the game never invents a per-round split.</p>
+  </section>
+
+  <section class="panel" aria-label="Tale status">
+    <h2>Your tale</h2>
+    <div class="stats">
+      <div>❤️ Hope <b id="hope">10</b></div>
+      <div>🌰 Snacks <b id="snacks">3</b></div>
+      <div>🗺️ Map <b id="map">0</b></div>
+      <div>⭐ Score <b id="score">0</b></div>
+      <div>📖 Chapter <b id="chapter">0 / 10</b></div>
+    </div>
+    <p id="lastRound" class="muted">No chapter written yet.</p>
+    <div id="actions">
+      <h3>Pick one action for the next chapter</h3>
+      <div class="row">
+        <button data-action="rest">🛏️ Rest by the fire</button>
+        <button data-action="scout">🔭 Scout ahead</button>
+        <button data-action="sprint">⚡ Sprint for the lighthouse</button>
+      </div>
+      <p class="muted">Rest: safe, recovers Hope on naps. Scout: collects Map. Sprint: risky on naps, big score on zoomies.</p>
+      <p id="chosen">No action chosen yet for the next chapter.</p>
+    </div>
+    <div id="ending" style="display:none">
+      <h3>Ending</h3>
+      <p id="endingText"></p>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Chapters">
+    <h2>Chapters</h2>
+    <div id="log"></div>
+  </section>
+
+  <section class="panel" aria-label="Sepolia ETH payment">
+    <h2>Pay with Sepolia ETH via MetaMask (testnet only)</h2>
+    <p>Connect MetaMask, then send Sepolia ETH — test ETH with no real value, never mainnet ETH. You type the recipient and the amount; the site never invents a recipient. A safe first test is 0.001 Sepolia ETH to your own address, which is filled in automatically after you connect.</p>
+    <label>Recipient (0x address)<br><input id="payTo" type="text" placeholder="0x…" size="46"></label>
+    <label>Amount (Sepolia ETH)<br><input id="payAmount" type="text" value="0.001" size="12"></label>
+    <div class="row">
+      <button id="payBtn">Send Sepolia ETH payment</button>
+    </div>
+    <p id="payInfo" class="muted"></p>
+    <p class="muted">Before sending, the site switches the wallet to Sepolia and verifies <code>eth_chainId</code> is <code>0xaa36a7</code>. If the wallet is not on Sepolia after switching, the payment is aborted.</p>
+  </section>
+
+  <section class="panel" aria-label="Wallet claim">
+    <h2>Claim your finished tale on Sepolia (optional)</h2>
+    <p>After a tale finishes, you can record it as a real Sepolia transaction: 0 ETH to yourself, with the tale result encoded in the calldata. No contract, no custody, nothing is collected. Gas is test ETH only.</p>
+    <div class="row">
+      <button id="walletBtn">Connect wallet</button>
+      <button id="claimBtn" disabled>Claim tale on Sepolia</button>
+    </div>
+    <p id="walletInfo" class="muted"></p>
+    <p class="muted">The claim checks that the wallet is on Sepolia (chain 11155111, 0xaa36a7) before sending, and pins that chain ID on the transaction.</p>
+  </section>
+
+  <footer>
+    <p>Data: <code>api.squeekchain.com</code> — <code>/v1/events?category=protocol</code> (system.settlement_completed) and <code>/v1/status</code>. Round classes: 0 work = nap, 1–499 = jog, 500+ = zoomies. Your tale is saved in this browser only.</p>
+    <p>See <a href="README.md">README</a>, <a href="DESIGN.md">DESIGN</a> and <a href="GENESIS.md">GENESIS submission pack</a>.</p>
+  </footer>
+</main>
+<script type="module" src="site.js"></script>
+</body>
+</html>

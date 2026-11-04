@@ -1,0 +1,87 @@
+# SqueekTale — design
+
+## Why a story, not another dashboard
+
+Genesis explicitly lists “a living story every round moves forward” as
+something to build, and explicitly skips read-only dashboards,
+explorers, trackers, landing pages, thin API wrappers and copies.
+SqueekTale is built to that line: the page is useless without a choice,
+and a choice is useless without a real settled round to resolve it.
+
+## The tale
+
+Pip, a young courier hamster, carries one last letter to the Dawn
+Lighthouse. The ten chapter titles trace the road: Leaving the Burrow,
+The Acorn River, Whispering Reeds, The Old Mill, Starlight Hollow,
+The Fog Bridge, Ember Field, The Sleeping Library, Storm Steps,
+The Dawn Lighthouse.
+
+Each chapter's text is assembled from three honest parts: the place,
+the round class (nap / jog / zoomies), and the player's action. No
+chapter claims a hamster did something it did not — the round class
+comes straight from the settlement batch's `workAdded`.
+
+## Balance, checked by the tests
+
+- Rest is the survival action: it is the only action that gains Hope
+  on naps, but it can never score more than 5 per chapter.
+- Scout is the map action: it is the only reliable way to reach the
+  Pathfinder ending (Map ≥ 10).
+- Sprint is the score action: it scores 0 on a nap and 20 on zoomies,
+  so sprinting blindly through a sleepy night costs Hope.
+- Demo walkthrough (sequence in `lib/story.js`): best play scores
+  115 → Dawn Keeper; sprint-only scores 100 → Brave Courier;
+  scout-only maps 14 → Pathfinder; rest-only → Quiet Traveller.
+  Every ending is reachable from the same demo sequence, by play
+  alone — no ending is locked behind a wallet or a payment.
+
+## Live, demo and recorded — kept apart
+
+- Live: poll `/v1/events?category=protocol` every 30 seconds. A new
+  `settledThroughRound` resolves the pending chapter. The live panel
+  always shows the latest settled round and the current wheel state.
+- Demo: 8-second simulated rounds, labelled “Demo (simulated
+  rounds)” in the header and in every chapter line.
+- Recorded: only entered automatically when the live API fetch fails,
+  labelled “Recorded sample (API unavailable)”. The sample sequence is
+  fixed in the engine and is not claimed to be any particular day's
+  real rounds.
+
+## Wallet, MetaMask and Sepolia ETH payment — safety notes
+
+- Payment and claim share one guard, `ensureSepolia()`: switch to
+  Sepolia, read `eth_chainId`, abort unless it is exactly `0xaa36a7`,
+  and pin that chain ID on the transaction.
+- Payment amounts are converted with BigInt in `lib/story.js`
+  (`ethToWeiHex`), never with floats, and are validated before any
+  wallet call: recipient must match `0x` + 40 hex characters, amount
+  must be a positive decimal with at most 18 decimals.
+- The site never invents a payment recipient, never defaults to a
+  creator address, and never sends mainnet ETH. The only default is
+  the user's own connected address, for a safe self-test.
+- A rejected payment or claim is shown as text and changes nothing
+  in the tale.
+
+## Wallet claim — safety notes
+
+- The claim button is disabled until a tale is finished.
+- It uses the injected provider only (`window.ethereum`). No private
+  key, seed phrase or relayer is ever handled by this code.
+- It calls `wallet_addEthereumChain` for Sepolia, then reads
+  `eth_chainId` and aborts unless it is exactly `0xaa36a7`.
+- The transaction is `value: 0x0`, `to: from`, with the ASCII tale
+  summary as calldata, and `chainId: 0xaa36a7` pinned on the request.
+- A rejected or failed claim is shown as text; it never changes the
+  tale, which stays saved in the browser.
+
+## Limits, stated honestly
+
+- Live tales are slow by design: real SqueekCore rounds are 10 minutes
+  each, so a live tale takes about 100 minutes. That is why demo mode
+  exists, and why it is labelled.
+- Recent live settlements at the time of building often reported
+  `workAdded: 0` (the hamster was idle). A live tale during a long nap
+  stretch will therefore be a Rest/Scout tale, not a Sprint tale —
+  that is the game working as intended, not a bug.
+- The page has no server, no leaderboard and no multiplayer. Scores
+  are local, so they are for fun and endings, not for ranked prizes.
