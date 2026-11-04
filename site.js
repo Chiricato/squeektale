@@ -1,6 +1,6 @@
 import {
   createTale, resolveChapter, classifyWork, ROUND_LABEL, ACTIONS,
-  ENDING_LABEL, parseSettlements, claimText, textToHex,
+  ENDING_LABEL, parseSettlements, textToHex,
   actionTxText, sepoliaTxUrl, shortHash, wheelDurationForRpm,
   DEMO_WORKS, RECORDED_WORKS,
   SEPOLIA_CHAIN_ID,
@@ -59,7 +59,7 @@ function renderTxs() {
   $('txList').innerHTML = txs.length
     ? txs.map((t) => `
       <tr><td>${t.action === 'claim' ? '—' : t.chapter}</td>
-      <td>${t.action === 'claim' ? 'Claim tale' : (ACTIONS[t.action]?.label || t.action)}</td>
+      <td>${ACTIONS[t.action]?.label || t.action}</td>
       <td><a href="${sepoliaTxUrl(t.hash)}" target="_blank" rel="noopener">${shortHash(t.hash)}</a></td>
       <td>${TX_STATUS_LABEL[t.status] || t.status}</td>
       <td>${t.at ? new Date(t.at).toLocaleString() : ''}</td></tr>`).join('')
@@ -109,9 +109,6 @@ function render() {
   $('ending').style.display = tale.finished ? 'block' : 'none';
   if (tale.finished) {
     $('endingText').textContent = `${ENDING_LABEL[tale.ending]} — ${tale.chapter} chapters, ${tale.score} points, Hope ${tale.hope}, Map ${tale.map}.`;
-    $('claimBtn').disabled = false;
-  } else {
-    $('claimBtn').disabled = true;
   }
 }
 
@@ -343,24 +340,8 @@ $('walletBtn').addEventListener('click', async () => {
     if (!window.ethereum) { $('walletInfo').textContent = 'No injected wallet found (e.g. MetaMask).'; return; }
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     wallet = accounts[0];
-    $('walletInfo').textContent = `Connected: ${wallet} (Sepolia check runs before any action or claim, nothing signed yet)`;
+    $('walletInfo').textContent = `Connected: ${wallet} (Sepolia check runs before any action, nothing signed yet)`;
   } catch (e) { $('walletInfo').textContent = sepErrorMessage(e, 'Wallet connection'); }
-});
-
-$('claimBtn').addEventListener('click', async () => {
-  try {
-    if (!tale.finished) return;
-    if (!window.ethereum || !wallet) { $('walletInfo').textContent = 'Connect a wallet first.'; return; }
-    await ensureSepolia();
-    const data = textToHex(claimText(tale));
-    const hash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [{ from: wallet, to: wallet, value: '0x0', data, chainId: SEPOLIA_CHAIN_ID }],
-    });
-    txs.unshift({ chapter: tale.chapter, action: 'claim', hash, status: 'sent', at: new Date().toISOString() });
-    saveTxs(); renderTxs(); checkPendingTxs();
-    $('walletInfo').textContent = `Claim sent (0 ETH to yourself, tale in calldata): ${hash} — it is also in the transaction table above. Gas is test ETH only.`;
-  } catch (e) { $('walletInfo').textContent = `Claim failed or rejected: ${e.message || e}`; }
 });
 
 render();

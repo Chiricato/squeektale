@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   classifyWork, createTale, resolveChapter, endingFor,
-  parseSettlements, claimText, textToHex, DEMO_WORKS,
+  parseSettlements, textToHex, DEMO_WORKS,
   isEthAddress, ethToWeiHex, actionTxText, sepoliaTxUrl, shortHash,
   wheelDurationForRpm,
 } from '../lib/story.js';
@@ -124,10 +124,6 @@ test('live wheel duration follows RPM and stops at 0', () => {
   assert.equal(wheelDurationForRpm(1), 10); // clamped, not a crawl
 });
 
-test('claim text is plain ASCII and hex-encodes cleanly', () => {
-  const t = createTale();
-  resolveChapter(t, 800, 'sprint');
-  const text = claimText(t);
-  assert.match(text, /^SqueekTale: chapters=1 score=20 /);
+test('textToHex hex-encodes plain ASCII cleanly', () => {
   assert.equal(textToHex('AB'), '0x4142');
 });

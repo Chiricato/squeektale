@@ -50,7 +50,7 @@ comes straight from the settlement batch's `workAdded`.
 
 ## Wallet, MetaMask and Sepolia ETH — safety notes
 
-- Every action and the claim share one guard, `ensureSepolia()`, in
+- Every action shares one guard, `ensureSepolia()`, in
   this order: SWITCH to Sepolia first (the no-op when Sepolia is
   already there, and it never overwrites the user's own RPC); only
   on error 4902 ADD Sepolia with the standard params; then read
@@ -64,8 +64,8 @@ comes straight from the settlement batch's `workAdded`.
   returns. A second pick is ignored while one action is already
   pending, so one chapter cannot be recorded twice.
 - The transaction table (saved in `localStorage` under
-  `squeektale-txs-v1`, cleared on a new tale) lists every action and
-  claim with its Sepolia Etherscan link, and polls
+  `squeektale-txs-v1`, cleared on a new tale) lists every action
+  with its Sepolia Etherscan link, and polls
   `eth_getTransactionReceipt` every 15 seconds while the page is
   open to move a row from "Sent" to "Confirmed" (receipt status
   0x1) or "Failed" (0x0).
@@ -79,20 +79,11 @@ comes straight from the settlement batch's `workAdded`.
 - The site never invents a recipient, never defaults to a creator
   address, and never sends mainnet ETH. Every transaction is to the
   user's own connected address.
-- A rejected action or claim is shown as text and changes nothing
+- A rejected action is shown as text and changes nothing
   in the tale.
-
-## Wallet claim — safety notes
-
-- The claim button is disabled until a tale is finished.
-- It uses the injected provider only (`window.ethereum`). No private
-  key, seed phrase or relayer is ever handled by this code.
-- It calls `wallet_addEthereumChain` for Sepolia, then reads
-  `eth_chainId` and aborts unless it is exactly `0xaa36a7`.
-- The transaction is `value: 0x0`, `to: from`, with the ASCII tale
-  summary as calldata, and `chainId: 0xaa36a7` pinned on the request.
-- A rejected or failed claim is shown as text; it never changes the
-  tale, which stays saved in the browser.
+- There is no final-tale claim button and no reward attached to
+  finishing a tale: the ending is shown in the tale panel, and the
+  per-action transactions are the whole on-chain record.
 
 ## Limits, stated honestly
 

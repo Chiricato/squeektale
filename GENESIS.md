@@ -14,8 +14,8 @@ writes the next chapter: the batch's work decides whether the chapter
 is a nap, a jog or zoomies, the player's action decides the outcome,
 and every action is itself a verifiable Sepolia transaction via
 MetaMask (0 ETH to yourself, gas in Sepolia test ETH, chapter and
-action in the calldata), listed in an on-chain transaction table, with
-a finished tale claimable the same way.
+action in the calldata), listed in an on-chain transaction table.
+There is no separate claim button and no reward.
 
 ## Project links (fill in after you publish)
 

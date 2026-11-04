@@ -57,19 +57,14 @@ Honesty rules, stated on the page itself:
   only counts after you confirm; rejecting it changes nothing in
   the tale. This is never mainnet ETH and never a real-money
   payment, and the site never invents a recipient.
-- **On-chain transaction table:** every confirmed action (and the
-  final claim) is listed below the chapters, newest first, with
-  chapter, action, transaction hash linked to Sepolia Etherscan,
-  and a status that updates from “Sent” to “Confirmed” while the
-  page stays open. The table is saved in this browser only
-  (`localStorage`, key `squeektale-txs-v1`) and is cleared when a
-  new tale starts.
-- **Claim a finished tale (Sepolia only):** after a tale finishes, one
-  click sends a real Sepolia transaction — **0 ETH to yourself**, with
-  the tale result (chapters, score, Hope, Map, ending) encoded in the
-  calldata, under the same Sepolia switch-and-verify check. No
-  contract, no custody, nothing is collected. The claim also appears
-  in the transaction table.
+- **On-chain transaction table:** every confirmed action is listed
+  below the chapters, newest first, with chapter, action,
+  transaction hash linked to Sepolia Etherscan, and a status that
+  updates from “Sent” to “Confirmed” while the page stays open.
+  The table is saved in this browser only (`localStorage`, key
+  `squeektale-txs-v1`) and is cleared when a new tale starts.
+  There is no separate final-tale claim button and no reward: the
+  per-action transactions are the whole on-chain record.
 
 ## The rules in short
 
@@ -93,7 +88,7 @@ Honesty rules, stated on the page itself:
 
 - `index.html` + `styles.css` + `site.js` — the playable one-page site.
 - `lib/story.js` — pure rules (round classes, action matrix, endings,
-  settlement parsing, claim text), shared by the page and the tests.
+  settlement parsing, action transaction text), shared by the page and the tests.
 - `test/story.test.js` — unit tests for the pure rules.
 - `DESIGN.md` — full design, balance and the demo-tale walkthrough.
 - `GENESIS.md` — the Genesis submission pack (name, one-sentence
