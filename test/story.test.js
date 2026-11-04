@@ -4,6 +4,7 @@ import {
   classifyWork, createTale, resolveChapter, endingFor,
   parseSettlements, claimText, textToHex, DEMO_WORKS,
   isEthAddress, ethToWeiHex, actionTxText, sepoliaTxUrl, shortHash,
+  wheelDurationForRpm,
 } from '../lib/story.js';
 
 test('classifyWork uses the 0 / 1-499 / 500+ round classes', () => {
@@ -112,6 +113,15 @@ test('per-chapter action transaction text and explorer link are exact', () => {
   assert.equal(sepoliaTxUrl('0xabc'), 'https://sepolia.etherscan.io/tx/0xabc');
   assert.equal(shortHash('0x1234567890abcdef1234'), '0x12345678…cdef1234');
   assert.throws(() => actionTxText(1, 'fly'), /unknown action/);
+});
+
+test('live wheel duration follows RPM and stops at 0', () => {
+  assert.equal(wheelDurationForRpm(0), null);
+  assert.equal(wheelDurationForRpm(-5), null);
+  assert.equal(wheelDurationForRpm(60), 1);
+  assert.equal(wheelDurationForRpm(30), 2);
+  assert.equal(wheelDurationForRpm(1000), 0.25); // clamped, not a blur
+  assert.equal(wheelDurationForRpm(1), 10); // clamped, not a crawl
 });
 
 test('claim text is plain ASCII and hex-encodes cleanly', () => {

@@ -14,8 +14,27 @@
     <p class="tag">Pip the courier must reach the Dawn Lighthouse in 10 chapters. Each chapter is written by one real settled round: a nap, a jog, or zoomies.</p>
   </header>
 
+  <section class="panel" aria-label="Wallet">
+    <h2>1 · Connect your wallet first</h2>
+    <p class="muted">Every Pick action is a real Sepolia transaction, so connect MetaMask before you play. No private key or seed phrase is ever handled by this site.</p>
+    <div class="row">
+      <button id="walletBtn">Connect wallet</button>
+    </div>
+    <p id="walletInfo" class="muted">Not connected yet.</p>
+  </section>
+
   <section class="panel" aria-label="Live Squeekchain data">
     <h2>Live from Squeekchain</h2>
+    <div class="wheelWrap" aria-label="Live hamster wheel">
+      <div class="wheel" id="wheelViz" aria-hidden="true">
+        <div class="spoke"></div>
+        <div class="spoke spoke60"></div>
+        <div class="spoke spoke120"></div>
+        <div class="hub"></div>
+      </div>
+      <div class="hamster" id="hamsterViz">🐹💤</div>
+    </div>
+    <p id="wheelState" class="muted">Wheel: loading…</p>
     <p id="wheel">Wheel now: loading…</p>
     <p id="liveInfo">Latest settled round: loading…</p>
     <p><span id="apiState">API: live</span> · <span id="modeLabel">Live SqueekCore</span></p>
@@ -76,11 +95,9 @@
     <h2>Claim your finished tale on Sepolia (optional)</h2>
     <p>After a tale finishes, you can record it as a real Sepolia transaction: 0 ETH to yourself, with the tale result encoded in the calldata. No contract, no custody, nothing is collected. Gas is test ETH only. The claim transaction also appears in the table above.</p>
     <div class="row">
-      <button id="walletBtn">Connect wallet</button>
       <button id="claimBtn" disabled>Claim tale on Sepolia</button>
     </div>
-    <p id="walletInfo" class="muted"></p>
-    <p class="muted">The claim checks that the wallet is on Sepolia (chain 11155111, 0xaa36a7) before sending, and pins that chain ID on the transaction.</p>
+    <p class="muted">Wallet connection is at the top of the page. The claim checks that the wallet is on Sepolia (chain 11155111, 0xaa36a7) before sending, and pins that chain ID on the transaction.</p>
   </section>
 
   <footer>

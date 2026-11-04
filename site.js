@@ -1,7 +1,7 @@
 import {
   createTale, resolveChapter, classifyWork, ROUND_LABEL, ACTIONS,
   ENDING_LABEL, parseSettlements, claimText, textToHex,
-  actionTxText, sepoliaTxUrl, shortHash,
+  actionTxText, sepoliaTxUrl, shortHash, wheelDurationForRpm,
   DEMO_WORKS, RECORDED_WORKS,
   SEPOLIA_CHAIN_ID,
 } from './lib/story.js';
@@ -142,6 +142,33 @@ function startDemoTimer() {
   }, 1000);
 }
 
+// Live wheel, driven only by the API's own numbers: rpmMilli from
+// /v1/status (and speedMmPerSecond as a cross-check in the label).
+// The wheel turns one revolution per 60/RPM seconds; at 0 RPM it
+// stops and the hamster rests. Nothing here is simulated: in demo
+// or recorded mode the label says so and the wheel keeps showing
+// the last live reading instead of pretending to be live.
+function updateWheel(measurement) {
+  const rpm = (Number(measurement?.rpmMilli) || 0) / 1000;
+  const duration = wheelDurationForRpm(rpm);
+  const wheelEl = $('wheelViz');
+  const hamsterEl = $('hamsterViz');
+  if (duration === null) {
+    wheelEl.style.animationPlayState = 'paused';
+    hamsterEl.classList.remove('running');
+    hamsterEl.textContent = '🐹💤';
+    $('wheelState').textContent = 'Wheel: resting — Squeektoshi is not running right now, so the wheel is still.';
+  } else {
+    wheelEl.style.animationDuration = `${duration}s`;
+    wheelEl.style.animationPlayState = 'running';
+    hamsterEl.classList.add('running');
+    hamsterEl.textContent = '🐹';
+    const speed = Number(measurement?.speedMmPerSecond) || 0;
+    $('wheelState').textContent = `Wheel: running at ${rpm} RPM${speed ? ` · ${speed} mm/s` : ''} — the wheel turns once every ${duration.toFixed(2)}s.`;
+  }
+  $('wheel').textContent = `Wheel now: ${measurement?.coreStatus || 'unknown'} · ${rpm} RPM · cumulative work ${measurement?.cumulativeWorkUnits || '?'}`;
+}
+
 async function pollLive() {
   if (mode !== 'live') return;
   try {
@@ -166,8 +193,7 @@ async function pollLive() {
     }
     if (stRes.ok) {
       const st = await stRes.json();
-      const rpm = (Number(st.measurement?.rpmMilli) || 0) / 1000;
-      $('wheel').textContent = `Wheel now: ${st.measurement?.coreStatus || 'unknown'} · ${rpm} RPM · cumulative work ${st.measurement?.cumulativeWorkUnits || '?'}`;
+      updateWheel(st.measurement);
     }
     $('apiState').textContent = 'API: live';
   } catch (e) {
@@ -189,6 +215,11 @@ function setMode(next) {
   if (mode === 'demo') startDemoTimer();
   else if (mode === 'live') $('wait').textContent = 'Live mode polls every 30 seconds. Pick an action, then wait for the next settlement to close.';
   else $('wait').textContent = 'Recorded mode: pick an action and the next recorded round resolves it at once.';
+  if (mode !== 'live') {
+    $('wheelState').textContent = 'Wheel: showing the last live reading — demo/recorded rounds are simulated and do not move the live wheel.';
+    $('wheelViz').style.animationPlayState = 'paused';
+    $('hamsterViz').classList.remove('running');
+  }
   // Screen-change bug fixed here: if the live API just failed while an
   // action was already chosen, do not leave that action stranded in
   // recorded mode waiting for another click.

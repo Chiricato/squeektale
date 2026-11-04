@@ -23,7 +23,11 @@ SqueekCore on Sepolia:
   events. Each one closes a batch with `settledThroughRound`,
   `previousSettledThroughRound` and `workAdded`.
 - `GET /v1/status` — live wheel telemetry (`coreStatus`, `rpmMilli`,
-  `cumulativeWorkUnits`) for the current-round readout.
+  `cumulativeWorkUnits`) for the current-round readout, and for the
+  live hamster wheel on the page: the wheel turns once every
+  60/RPM seconds, and stops with a resting hamster at 0 RPM. In
+  demo/recorded mode the wheel is paused and labelled as showing
+  only the last live reading.
 - Round classes, the same bands used across the Squeekchain ecosystem:
   `0` work = 💤 Nap, `1–499` = 🐾 Jog, `500+` = 🔥 Zoomies.
 
@@ -39,10 +43,11 @@ Honesty rules, stated on the page itself:
 
 ## Wallet: MetaMask + Sepolia ETH (per action, not a separate send)
 
-- **Connect:** the “Connect wallet” button uses the injected provider
-  (MetaMask) via `eth_requestAccounts`. No private key or seed phrase
-  is ever handled by this site. Picking an action also connects
-  automatically if you are not connected yet.
+- **Connect:** the “Connect wallet” button is at the very top of the
+  page, because it is the first thing a player needs. It uses the
+  injected provider (MetaMask) via `eth_requestAccounts`. No private
+  key or seed phrase is ever handled by this site. Picking an action
+  also connects automatically if you are not connected yet.
 - **Every Pick action is a Sepolia transaction (testnet only):**
   clicking Rest, Scout or Sprint opens MetaMask for a real Sepolia
   transaction — **0 ETH to yourself**, gas in Sepolia test ETH, with
@@ -97,7 +102,7 @@ Honesty rules, stated on the page itself:
 ## Run the tests
 
 ```bash
-npm test   # 15 tests, no dependencies
+npm test   # 16 tests, no dependencies
 ```
 
 ## What this is not
