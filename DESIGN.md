@@ -33,7 +33,8 @@ comes straight from the settlement batch's `workAdded`.
   115 → Dawn Keeper; sprint-only scores 100 → Brave Courier;
   scout-only maps 14 → Pathfinder; rest-only → Quiet Traveller.
   Every ending is reachable from the same demo sequence, by play
-  alone — no ending is locked behind a wallet or a payment.
+  alone — no ending is locked behind a real-money payment; the only
+  on-chain cost is Sepolia test ETH gas for recording each action.
 
 ## Live, demo and recorded — kept apart
 
@@ -47,15 +48,27 @@ comes straight from the settlement batch's `workAdded`.
   fixed in the engine and is not claimed to be any particular day's
   real rounds.
 
-## Wallet, MetaMask and Sepolia ETH payment — safety notes
+## Wallet, MetaMask and Sepolia ETH — safety notes
 
-- Payment and claim share one guard, `ensureSepolia()`, in this
-  order: SWITCH to Sepolia first (the no-op when Sepolia is already
-  there, and it never overwrites the user's own RPC); only on error
-  4902 ADD Sepolia with the standard params; then read `eth_chainId`
-  and abort unless it is exactly `0xaa36a7`, and pin that chain ID
-  on the transaction. User rejection (4001) and an already-pending
-  wallet request (-32002) are reported in plain words.
+- Every action and the claim share one guard, `ensureSepolia()`, in
+  this order: SWITCH to Sepolia first (the no-op when Sepolia is
+  already there, and it never overwrites the user's own RPC); only
+  on error 4902 ADD Sepolia with the standard params; then read
+  `eth_chainId` and abort unless it is exactly `0xaa36a7`, and pin
+  that chain ID on the transaction. User rejection (4001) and an
+  already-pending wallet request (-32002) are reported in plain words.
+- There is no separate "send" panel. Picking an action sends one
+  Sepolia transaction (0 ETH to yourself, calldata
+  `SqueekTale: chapter=N action=<id>`, gas in Sepolia ETH) and the
+  action only becomes the pending action after the transaction hash
+  returns. A second pick is ignored while one action is already
+  pending, so one chapter cannot be recorded twice.
+- The transaction table (saved in `localStorage` under
+  `squeektale-txs-v1`, cleared on a new tale) lists every action and
+  claim with its Sepolia Etherscan link, and polls
+  `eth_getTransactionReceipt` every 15 seconds while the page is
+  open to move a row from "Sent" to "Confirmed" (receipt status
+  0x1) or "Failed" (0x0).
 - Screen-change bugs probed and fixed: a chosen action stranded by a
   live-API failure now resolves at once in recorded mode; the wait
   text is reset on every mode change; account/chain changes in the
@@ -63,14 +76,10 @@ comes straight from the settlement batch's `workAdded`.
   answer with no settled rounds shows a retry notice instead of
   hanging on “loading”; every element id used by `site.js` was
   checked against `index.html` (none missing).
-- Payment amounts are converted with BigInt in `lib/story.js`
-  (`ethToWeiHex`), never with floats, and are validated before any
-  wallet call: recipient must match `0x` + 40 hex characters, amount
-  must be a positive decimal with at most 18 decimals.
-- The site never invents a payment recipient, never defaults to a
-  creator address, and never sends mainnet ETH. The only default is
-  the user's own connected address, for a safe self-test.
-- A rejected payment or claim is shown as text and changes nothing
+- The site never invents a recipient, never defaults to a creator
+  address, and never sends mainnet ETH. Every transaction is to the
+  user's own connected address.
+- A rejected action or claim is shown as text and changes nothing
   in the tale.
 
 ## Wallet claim — safety notes

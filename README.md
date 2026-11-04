@@ -37,24 +37,34 @@ Honesty rules, stated on the page itself:
 - Demo mode simulates 8-second rounds so a whole tale can be finished
   in about a minute for review.
 
-## Wallet: MetaMask + Sepolia ETH payment
+## Wallet: MetaMask + Sepolia ETH (per action, not a separate send)
 
 - **Connect:** the “Connect wallet” button uses the injected provider
   (MetaMask) via `eth_requestAccounts`. No private key or seed phrase
-  is ever handled by this site.
-- **Pay with Sepolia ETH (testnet only):** type a recipient address
-  and an amount (default `0.001`), then “Send Sepolia ETH payment”.
+  is ever handled by this site. Picking an action also connects
+  automatically if you are not connected yet.
+- **Every Pick action is a Sepolia transaction (testnet only):**
+  clicking Rest, Scout or Sprint opens MetaMask for a real Sepolia
+  transaction — **0 ETH to yourself**, gas in Sepolia test ETH, with
+  `SqueekTale: chapter=N action=<id>` encoded in the calldata.
   The page switches the wallet to Sepolia, verifies `eth_chainId` is
-  `0xaa36a7` before sending, pins that chain ID, and sends the exact
-  amount you typed as the transaction value. Gas is also Sepolia test
-  ETH. This is never mainnet ETH and never a real-money payment.
-  A safe first test is sending to your own address, which is filled
-  in automatically after you connect.
+  `0xaa36a7` before sending, and pins that chain ID. The action
+  only counts after you confirm; rejecting it changes nothing in
+  the tale. This is never mainnet ETH and never a real-money
+  payment, and the site never invents a recipient.
+- **On-chain transaction table:** every confirmed action (and the
+  final claim) is listed below the chapters, newest first, with
+  chapter, action, transaction hash linked to Sepolia Etherscan,
+  and a status that updates from “Sent” to “Confirmed” while the
+  page stays open. The table is saved in this browser only
+  (`localStorage`, key `squeektale-txs-v1`) and is cleared when a
+  new tale starts.
 - **Claim a finished tale (Sepolia only):** after a tale finishes, one
   click sends a real Sepolia transaction — **0 ETH to yourself**, with
   the tale result (chapters, score, Hope, Map, ending) encoded in the
   calldata, under the same Sepolia switch-and-verify check. No
-  contract, no custody, nothing is collected.
+  contract, no custody, nothing is collected. The claim also appears
+  in the transaction table.
 
 ## The rules in short
 
@@ -87,7 +97,7 @@ Honesty rules, stated on the page itself:
 ## Run the tests
 
 ```bash
-npm test   # 14 tests, no dependencies
+npm test   # 15 tests, no dependencies
 ```
 
 ## What this is not

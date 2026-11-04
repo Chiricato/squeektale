@@ -13,4 +13,9 @@ input { background: #120d1c; color: #f3ead8; border: 1px solid #4a3a6b; border-r
 .muted { color: #b8a98d; }
 .entry { border-top: 1px solid #4a3a6b; padding: 10px 0; display: grid; gap: 4px; }
 a { color: #ffd95e; }
+.tableWrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid #4a3a6b; vertical-align: top; }
+th { color: #d8c9a8; }
+td a { word-break: break-all; }
 code { background: #120d1c; padding: 2px 6px; border-radius: 6px; }

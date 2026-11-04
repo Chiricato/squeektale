@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   classifyWork, createTale, resolveChapter, endingFor,
   parseSettlements, claimText, textToHex, DEMO_WORKS,
-  isEthAddress, ethToWeiHex,
+  isEthAddress, ethToWeiHex, actionTxText, sepoliaTxUrl, shortHash,
 } from '../lib/story.js';
 
 test('classifyWork uses the 0 / 1-499 / 500+ round classes', () => {
@@ -105,6 +105,13 @@ test('Sepolia ETH payment helpers validate address and amount exactly', () => {
   assert.throws(() => ethToWeiHex('0'), /greater than 0/);
   assert.throws(() => ethToWeiHex('-1'), /positive decimal/);
   assert.throws(() => ethToWeiHex('0.0000000000000000001'), /at most 18 decimals/);
+});
+
+test('per-chapter action transaction text and explorer link are exact', () => {
+  assert.equal(actionTxText(3, 'scout'), 'SqueekTale: chapter=3 action=scout');
+  assert.equal(sepoliaTxUrl('0xabc'), 'https://sepolia.etherscan.io/tx/0xabc');
+  assert.equal(shortHash('0x1234567890abcdef1234'), '0x12345678…cdef1234');
+  assert.throws(() => actionTxText(1, 'fly'), /unknown action/);
 });
 
 test('claim text is plain ASCII and hex-encodes cleanly', () => {
