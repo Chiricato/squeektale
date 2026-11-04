@@ -58,7 +58,7 @@ const TX_STATUS_LABEL = {
 function renderTxs() {
   $('txList').innerHTML = txs.length
     ? txs.map((t) => `
-      <tr><td>${t.action === 'claim' ? '—' : t.chapter}</td>
+      <tr><td>${t.chapter}</td>
       <td>${ACTIONS[t.action]?.label || t.action}</td>
       <td><a href="${sepoliaTxUrl(t.hash)}" target="_blank" rel="noopener">${shortHash(t.hash)}</a></td>
       <td>${TX_STATUS_LABEL[t.status] || t.status}</td>
@@ -328,10 +328,10 @@ if (window.ethereum?.on) {
     wallet = accounts?.[0] || null;
     $('walletInfo').textContent = wallet
       ? `Connected: ${wallet} (account changed in wallet)`
-      : 'Wallet disconnected in MetaMask. Connect again before picking an action or claiming.';
+      : 'Wallet disconnected in MetaMask. Connect again before picking an action.';
   });
   window.ethereum.on('chainChanged', () => {
-    $('walletInfo').textContent = 'Chain changed in wallet. The next action or claim will switch back to Sepolia and verify it first.';
+    $('walletInfo').textContent = 'Chain changed in wallet. The next action will switch back to Sepolia and verify it first.';
   });
 }
 
